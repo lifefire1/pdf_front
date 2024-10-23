@@ -10,7 +10,7 @@ function Dictionary({ zoomIn, zoomOut, scale, words, addWord, pageNumber, update
         let page = pageNumber;
         let title = "Gradle.pdf"
         let xhr = new XMLHttpRequest();
-        let url = "192.168.0.20:8080/word"
+        let url = "localhost:8080/word"
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         var data = JSON.stringify({"word": word, "translation": translatedWord, "pageNumber": page, "title": title});
