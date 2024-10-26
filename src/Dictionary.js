@@ -8,17 +8,32 @@ function Dictionary({ zoomIn, zoomOut, scale, words, addWord, pageNumber, update
         let word = newWord;
         let translatedWord  = translation;
         let page = pageNumber;
-        let title = "Gradle.pdf"
+        let title = "Gradle.pdf";
         let xhr = new XMLHttpRequest();
-        let url = "localhost:8080/word"
+        let url = "http://192.168.0.20:8080/word"; // Добавлен протокол
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
-        var data = JSON.stringify({"word": word, "translation": translatedWord, "pageNumber": page, "title": title});
+        var data = JSON.stringify({
+            "word": word,
+            "translation": translatedWord,
+            "pageNumber": page,
+            "title": title
+        });
+
+        // Обработка ответа
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                console.log("Word added successfully:", xhr.responseText);
+            } else {
+                console.error("Failed to add word:", xhr.status, xhr.statusText);
+            }
+        };
+
         xhr.send(data);
+
+        // Очистка полей
         setNewWord("");
         setTranslation("");
-
-
     };
 
     const goToPreviousPage = () => {
