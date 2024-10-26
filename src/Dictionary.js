@@ -1,47 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function Dictionary({ zoomIn, zoomOut, scale, words, addWord, pageNumber, updatePageNumber, numPages }) {
-    const [newWord,setNewWord] = useState("");
+function Dictionary({ zoomIn, zoomOut, scale, pageNumber, updatePageNumber, numPages }) {
+    const [newWord, setNewWord] = useState("");
     const [translation, setTranslation] = useState("");
+    const [words, setWords] = useState([]);
+    const title = "Gradle.pdf"; // Или другой нужный title
+
+    // Функция для получения слов с сервера
+    const fetchWords = () => {
+        fetch(`http://192.168.0.20:8080/page/${pageNumber}/title/${title}`)
+            .then(response => response.json())
+            .then(data => {
+                setWords(data);
+                console.log("Полученные слова:", data);
+            })
+            .catch(error => console.error("Ошибка при получении слов:", error));
+    };
+
+    // Вызываем fetchWords при изменении pageNumber или title
+    useEffect(() => {
+        fetchWords();
+    }, [pageNumber, title]);
 
     const handleAddWord = () => {
-        let word = newWord;
-        let translatedWord  = translation;
-        let page = pageNumber;
-        let title = "Gradle.pdf";
-        let xhr = new XMLHttpRequest();
-        let url = "http://192.168.0.20:8080/word"; // Добавлен протокол
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        var data = JSON.stringify({
-            "word": word,
-            "translation": translatedWord,
-            "pageNumber": page,
-            "title": title
-        });
+        const word = newWord.trim();
+        const translatedWord = translation.trim();
 
+        if (!word || !translatedWord) {
+            console.warn("Поля для добавления слова и перевода не должны быть пустыми");
+            return;
+        }
 
-        // Лог данных перед отправкой
-        console.log("Отправляемые данные:", data);
-        console.log("newWord:", word);
-        console.log("translation:", translatedWord);
-        console.log("pageNumber:", page);
-        console.log("title:", title);
-
-        // Обработка ответа
-        xhr.onload = () => {
-            if (xhr.status === 200) {
-                console.log("Word added successfully:", xhr.responseText);
-            } else {
-                console.error("Failed to add word:", xhr.status, xhr.statusText);
-            }
-        };
-
-        xhr.send(data);
-
-        // Очистка полей
-        setNewWord("");
-        setTranslation("");
+        fetch("http://192.168.0.20:8080/word", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                word: word,
+                translation: translatedWord,
+                pageNumber: pageNumber,
+                title: title,
+            }),
+        })
+            .then((response) => {
+                if (!response.ok) throw new Error("Ошибка при добавлении слова");
+                return response.text(); // Используем text() вместо json()
+            })
+            .then((message) => {
+                console.log(message || "Word added successfully");
+                fetchWords(); // Обновляем список слов после добавления
+                setNewWord(""); // Очищаем поле слова
+                setTranslation(""); // Очищаем поле перевода
+            })
+            .catch((error) => console.error("Ошибка:", error));
     };
 
     const goToPreviousPage = () => {
