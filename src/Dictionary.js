@@ -20,6 +20,14 @@ function Dictionary({ zoomIn, zoomOut, scale, words, addWord, pageNumber, update
             "title": title
         });
 
+
+        // Лог данных перед отправкой
+        console.log("Отправляемые данные:", data);
+        console.log("newWord:", word);
+        console.log("translation:", translatedWord);
+        console.log("pageNumber:", page);
+        console.log("title:", title);
+
         // Обработка ответа
         xhr.onload = () => {
             if (xhr.status === 200) {
